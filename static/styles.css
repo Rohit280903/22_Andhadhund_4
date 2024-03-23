@@ -38,12 +38,12 @@ input[type="password"] {
 }
 
 button {
-    width: 50%; /* Make button width 60% */
+    width: 60%; /* Make button width 60% */
     padding: 10px;
     background-color: #872BCF;
     color: #fff;
     border: none;
-    border-radius: 20px;
+    border-radius: 10px;
     cursor: pointer;
     display: block; /* Ensure button is block-level element for centering */
     margin: 0 auto; /* Center align button */
