@@ -1,48 +1,40 @@
-import firebase_admin
-from firebase_admin import credentials, auth
-from flask import Flask, render_template, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate("path/to/serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+# Dummy database for demonstration purposes
+users = {'user1': 'password1', 'user2': 'password2'}
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-@app.route('/signup')
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users:
+            return render_template('signup.html', message='Username already exists!')
+        else:
+            users[username] = password
+            return redirect(url_for('login'))
     return render_template('signup.html')
 
-@app.route('/google-login')
-def google_login():
-    # Create a Google authentication provider
-    provider = auth.GoogleAuthProvider()
-
-    # Specify additional scopes if needed
-    provider.add_scope('profile')
-    provider.add_scope('email')
-
-    # Authenticate with Firebase using the Google provider
-    try:
-        user = auth.verify_id_token(request.form['idToken'], check_revoked=True)
-        # Successfully authenticated with Firebase
-        session['user_id'] = user['uid']  # Store user ID in session
-        return redirect(url_for('dashboard'))
-    except Exception as e:
-        # Authentication failed
-        return str(e)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users and users[username] == password:
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('login.html', message='Invalid username or password!')
+    return render_template('login.html')
 
 @app.route('/dashboard')
 def dashboard():
-    user_id = session.get('user_id')
-    if user_id:
-        return render_template('dashboard.html', user_id=user_id)
-    else:
-        return redirect(url_for('login'))
+    return render_template('dashboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
